@@ -21,13 +21,30 @@ function processStyle(css, name, spec, level, options) {
 function processRules(css, name, rules, level, options) {
   if (isEmpty(rules)) { return; }
 
-  css.push(indent(level) + '.' + generateClassName(name, options) + ' {');
+  let nestingRules = {};
+  let className = generateClassName(name, options);
+
+  css.push(indent(level) + '.' + className + ' {');
 
   foreach(rules, (value, key) => {
-    css.push(indent(level + 1) + buildCSSRule(key, value, options));
+    if (key.match(/^& /)) {
+      nestingRules[key] = value;
+    } else {
+      css.push(indent(level + 1) + buildCSSRule(key, value, options));
+    }
+
   });
 
   css.push(indent(level) + '}');
+
+  foreach(nestingRules, (rules, key) => {
+    let nestingSelector = key.slice(2);
+    css.push(indent(level) + '.' + className + ' ' + nestingSelector + '{');
+      foreach(rules, (value, key) => {
+        css.push(indent(level + 1) + buildCSSRule(key, value, options));
+      });
+    css.push(indent(level) + '}');
+  });
 }
 
 function processSelectors(css, name, selectors, level, options) {

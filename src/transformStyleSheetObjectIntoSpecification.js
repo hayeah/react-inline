@@ -122,7 +122,15 @@ function processStyleAndMediaQueryAndSelector(styles, styleName, mediaQueryName,
 }
 
 function processRule(rules, key, value) {
-  assert(typeof value === 'string' || typeof value === 'number', 'value must be a number or a string');
+  // Allow one level of nesting for a class selector
+  if (key.match(/^& /)) {
+    foreach(value, (value, key) => {
+      assert(typeof value === 'string' || typeof value === 'number', 'value must be a number or a string');
+    });
+  } else {
+    assert(typeof value === 'string' || typeof value === 'number', 'value must be a number or a string');
+  }
+
   rules[key] = value;
 }
 
